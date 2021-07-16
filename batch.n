@@ -43,7 +43,7 @@ let compileTestScript = [testFiles:list[str]] -> cmd[bool] {
 
 	let _ = FileIO.append("carton.n", "]\nlet main = [] -> cmd[()] {\nfor (fdata in functions) {\nlet _ = fdata.func(fdata.i)!\n}let pass = 0\nfor (s in files) {\nif s == passed {\nvar pass = pass + 1\n}\n}\nlet frac = intInBase10(pass) + \"/\" + intInBase10(len(files)) + \" Tests Passed\"\nfor (i in range(0, (len(files) + 2) - len(frac), 1)) {\nvar frac = frac + \" \"\n}\nvar frac = \"\\u{1b}[1;\" + intInBase10(33) + \"m\" + frac + \"\\u{1b}[\" + intInBase10(39) + \"m\"\nprintWithProgressBar(frac)\n}\nlet pub out = main()")!
 
-	print(testFiles)
+	print("Carton created! Run with `n --file carton.n`")
 	return true	
 }
 
