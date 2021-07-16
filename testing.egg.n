@@ -1,0 +1,1 @@
+assert type 2: int

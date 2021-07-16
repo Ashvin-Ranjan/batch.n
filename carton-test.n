@@ -1,0 +1,76 @@
+import times
+
+type status = awaiting
+            | failed
+            | passed
+
+let files = [awaiting]
+
+let printWithProgressBar = [[t] val:t] -> cmd[()] {
+	print(val)
+	printWithEnd("", "[")
+	for (stat in files) {
+		if stat == failed {
+			printWithEnd("\u{1b}[" + intInBase10(39) + "m", "\u{1b}[" + intInBase10(31) + "m█")
+		} else if stat == passed {
+			printWithEnd("\u{1b}[" + intInBase10(39) + "m", "\u{1b}[" + intInBase10(32) + "m█")
+		} else {
+			printWithEnd("", "█")
+		}
+	}
+
+	printWithEnd("\r", "]")
+}
+
+// A hack until v1.3.1
+let setItemInList = [[t] i:int v:t l:list[t]] -> list[t] {
+	let part1 = l |> subsection(0, i)
+	let part2 = l |> subsection(i+1, len(l))
+	return [..part1, v, ..part2]
+}
+
+let impf0 = [i:int] -> cmd[()] {
+	let _ = printWithProgressBar("./testing.egg.n: Importing file...")!
+	let m = imp "./testing.egg.n"
+	let _ = printWithProgressBar("./testing.egg.n: File imported!")!
+
+	if let <yes mo> = intoModule(m) {
+		let _ = printWithProgressBar("./testing.egg.n: Starting test reviews.")!
+		for ({hasPassed: hp; fileLine: fl; unitTestType: ut; possibleTypes: pt} in getUnitTestResults(mo)) {
+			if hp == false {
+				var files = setItemInList(i, failed, files)
+				let _ = printWithProgressBar("./testing.egg.n: Test failed\nType: " + ut + "\nLine: " + intInBase10(fl))!
+			}
+		}
+		var files = setItemInList(i, passed, files)
+		let _ = printWithProgressBar("./testing.egg.n: Tests passed")!
+	} else {
+		var files = setItemInList(i, failed, files)
+		let _ = printWithProgressBar("./testing.egg.n: An unexpected error occured.")!
+	}
+}
+
+let functions = [{i: 0; func: impf0}]
+
+print(functions)
+
+let main = [] -> cmd[()] {
+	for (fdata in functions) {
+		let _ = fdata.func(fdata.i)!
+	}
+	let pass = 0
+	for (s in files) {
+		if s == passed {
+			var pass = pass + 1
+		}
+	}
+	let frac = intInBase10(pass) + "/" + intInBase10(len(files)) + " Tests Passed"
+	for (i in range(0, (len(files) + 2) - len(frac), 1)) {
+		var frac = frac + " "
+	}
+	var frac = "\u{1b}[1;" + intInBase10(33) + "m" + frac + "\u{1b}[" + intInBase10(39) + "m"
+
+	printWithProgressBar(frac)
+}
+
+let pub out = main()
